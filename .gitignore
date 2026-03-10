@@ -1,0 +1,9 @@
+New-Item ".gitignore"
+```
+
+Lalu isi dengan:
+```
+node_modules/
+.env
+dashboard/dist/
+*.log
