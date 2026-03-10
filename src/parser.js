@@ -1,20 +1,12 @@
 /**
- * Parse free-text standup message into structured sections.
+ * Flexible standup parser.
+ * Handles multiline, inline, and Discord-compressed formats.
  *
- * Supported headers (case-insensitive, flexible):
- *   DONE, TODO, NOTE/NOTES, BLOCKER/BLOCKERS, REVISIT, UPSOLVE
- *
- * Example input:
- *   DONE
- *   - finish exploit dev
- *   - read paper
- *
- *   TODO
- *   task A
- *   task B
- *
- *   NOTE
- *   remember to check xyz
+ * Supported:
+ *   DONE selesain ini          ← inline
+ *   DONE\n- task               ← multiline
+ *   DONE: task a, task b       ← colon inline
+ *   done ngapain aja           ← lowercase
  */
 
 const SECTION_MAP = {
@@ -28,26 +20,74 @@ const SECTION_MAP = {
   upsolve:  "revisit",
 };
 
-const HEADER_REGEX = new RegExp(
-  `^(${Object.keys(SECTION_MAP).join("|")})[:\\s]*$`,
-  "i"
-);
+const KEYWORDS = Object.keys(SECTION_MAP).join("|");
 
 export function parseStandup(text) {
   const result = { done: "", todo: "", notes: "", blockers: "", revisit: "" };
-  let currentSection = null;
+
+  // Normalize line endings
+  const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+  // Split on section headers — works inline and multiline
+  // e.g. "DONE foo TODO bar" or "DONE\nfoo\nTODO\nbar"
+  const splitRegex = new RegExp(`(?:^|\\n|\\s{2,})(${KEYWORDS})\\s*[:\\-]?\\s*`, "gi");
+
+  const parts = [];
+  let lastIndex = 0;
+  let lastKey = null;
+  let match;
+
+  splitRegex.lastIndex = 0;
+
+  while ((match = splitRegex.exec(normalized)) !== null) {
+    if (lastKey !== null) {
+      parts.push({ key: lastKey, text: normalized.slice(lastIndex, match.index) });
+    }
+    lastKey = SECTION_MAP[match[1].toLowerCase()];
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastKey !== null) {
+    parts.push({ key: lastKey, text: normalized.slice(lastIndex) });
+  }
+
+  // Fallback: try strict line-by-line
+  if (parts.length === 0) {
+    return parseLineFallback(normalized);
+  }
+
+  for (const { key, text } of parts) {
+    const cleaned = text
+      .split("\n")
+      .map(l => l.trim().replace(/^[-*•]\s*/, ""))
+      .filter(Boolean)
+      .join("\n");
+    if (cleaned) {
+      result[key] = result[key] ? result[key] + "\n" + cleaned : cleaned;
+    }
+  }
+
+  return result;
+}
+
+function parseLineFallback(text) {
+  const result = { done: "", todo: "", notes: "", blockers: "", revisit: "" };
+  const headerRegex = new RegExp(`^(${KEYWORDS})[:\\s]*(.*)$`, "i");
+  let current = null;
   const buckets = {};
 
   for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line) continue;
-
-    const match = line.match(HEADER_REGEX);
-    if (match) {
-      currentSection = SECTION_MAP[match[1].toLowerCase()];
-      if (!buckets[currentSection]) buckets[currentSection] = [];
-    } else if (currentSection) {
-      buckets[currentSection].push(line.replace(/^[-*•]\s*/, ""));
+    const m = line.match(headerRegex);
+    if (m) {
+      current = SECTION_MAP[m[1].toLowerCase()];
+      if (!buckets[current]) buckets[current] = [];
+      // Handle inline content after header: "DONE selesain ini"
+      const inline = m[2]?.trim().replace(/^[-*•]\s*/, "");
+      if (inline) buckets[current].push(inline);
+    } else if (current) {
+      buckets[current].push(line.replace(/^[-*•]\s*/, ""));
     }
   }
 
@@ -58,7 +98,6 @@ export function parseStandup(text) {
   return result;
 }
 
-/** Returns true if at least one section has content */
 export function hasContent(parsed) {
   return Object.values(parsed).some((v) => v.trim().length > 0);
 }
