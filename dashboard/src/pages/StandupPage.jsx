@@ -16,8 +16,8 @@ function EntryRow({ entry, onEdit, onDelete }) {
   return (
     <>
       <tr style={{ cursor: "pointer" }} onClick={() => setExpanded(x => !x)}>
-        <td style={{ width: 36, color: "var(--text3)" }}>#{entry.id}</td>
-        <td style={{ width: 160, color: "var(--text2)", whiteSpace: "nowrap" }}>{fmtDate(entry.created_at)}</td>
+        <td style={{ width: 36, color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{entry.id}</td>
+        <td style={{ width: 175, color: "var(--text2)", whiteSpace: "nowrap", fontSize: 12 }}>{fmtDate(entry.created_at)}</td>
         <td className="td-clamp">{entry.done || <span className="text3">—</span>}</td>
         <td className="td-clamp">{entry.todo || <span className="text3">—</span>}</td>
         <td style={{ width: 80 }}>
@@ -28,9 +28,9 @@ function EntryRow({ entry, onEdit, onDelete }) {
         </td>
       </tr>
       {expanded && (
-        <tr>
-          <td colSpan={5} style={{ background: "var(--bg2)", paddingBottom: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: "8px 14px 0" }}>
+        <tr className="expanded-row">
+          <td colSpan={5} style={{ paddingBottom: 18 }}>
+            <div className="expanded-grid">
               {[
                 { key: "done",     icon: "✅", label: "Done"     },
                 { key: "todo",     icon: "🎯", label: "Todo"     },
@@ -39,10 +39,10 @@ function EntryRow({ entry, onEdit, onDelete }) {
                 { key: "revisit",  icon: "🔁", label: "Revisit"  },
               ].filter(s => entry[s.key]?.trim()).map(({ key, icon, label }) => (
                 <div key={key}>
-                  <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: ".1em", marginBottom: 4 }}>
+                  <div className="expanded-section-label">
                     {icon} {label.toUpperCase()}
                   </div>
-                  <div style={{ color: "var(--text2)", whiteSpace: "pre-wrap", fontSize: 12 }}>{entry[key]}</div>
+                  <div className="expanded-section-text">{entry[key]}</div>
                 </div>
               ))}
             </div>
@@ -144,7 +144,7 @@ export default function StandupPage() {
       </div>
 
       {loading ? (
-        <div className="text3">loading...</div>
+        <div className="text3" style={{ paddingTop: 40, textAlign: 'center', fontSize: 12 }}>loading...</div>
       ) : entries.length === 0 ? (
         <div className="empty-state">Belum ada standup. Pake <code>/standup</code> di Discord.</div>
       ) : (

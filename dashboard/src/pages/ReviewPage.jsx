@@ -26,7 +26,7 @@ function AddModal({ onAdd, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ width: 400 }}>
+      <div className="modal" style={{ width: 440 }}>
         <div className="modal-title">Add Review Item</div>
         <div className="form-group">
           <label className="input-label">TITLE</label>
@@ -65,7 +65,7 @@ function EditModal({ item, onSave, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ width: 400 }}>
+      <div className="modal" style={{ width: 440 }}>
         <div className="modal-title">Edit Item #{item.id}</div>
         <div className="form-group">
           <label className="input-label">TITLE</label>
@@ -150,7 +150,7 @@ export default function ReviewPage() {
       </div>
 
       {/* Stats bar */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 14, marginBottom: 22 }}>
         {[
           { label: "Pending", value: stats.pending ?? 0, color: "var(--orange)" },
           { label: "Done",    value: stats.done    ?? 0, color: "var(--green)"  },
@@ -158,30 +158,27 @@ export default function ReviewPage() {
           { label: "Rate",    value: stats.total > 0 ? `${Math.round(Number(stats.done)/Number(stats.total)*100)}%` : "0%", color: "var(--blue)" },
         ].map(({ label, value, color }) => (
           <div key={label} className="card-sm" style={{ flex: 1, textAlign: "center" }}>
-            <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: ".1em", marginBottom: 4 }}>{label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color }}>{value}</div>
+            <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: ".12em", marginBottom: 6, fontFamily: 'var(--font-mono)', fontWeight: 500 }}>{label.toUpperCase()}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color, fontFamily: 'var(--font-sans)', letterSpacing: '-.02em' }}>{value}</div>
           </div>
         ))}
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 16, borderBottom: "1px solid var(--border)", paddingBottom: 0 }}>
+      <div className="filter-tabs">
         {["pending", "done", "all"].map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11,
-              letterSpacing: ".08em", color: filter === f ? "var(--green)" : "var(--text3)",
-              borderBottom: `2px solid ${filter === f ? "var(--green)" : "transparent"}`,
-              marginBottom: -1,
-            }}>
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`filter-tab ${filter === f ? "active" : ""}`}
+          >
             {f.toUpperCase()}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text3">loading...</div>
+        <div className="text3" style={{ paddingTop: 40, textAlign: 'center', fontSize: 12 }}>loading...</div>
       ) : shown.length === 0 ? (
         <div className="empty-state">
           {filter === "pending" ? "List kosong 👍 ga ada yang pending" : "Belum ada item."}
@@ -196,8 +193,8 @@ export default function ReviewPage() {
                 <th style={{ width: 100 }}>CATEGORY</th>
                 <th style={{ width: 80 }}>STATUS</th>
                 <th style={{ width: 80 }}>DAYS</th>
-                <th style={{ width: 80 }}>ADDED</th>
-                <th style={{ width: 110 }}></th>
+                <th style={{ width: 90 }}>ADDED</th>
+                <th style={{ width: 120 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -208,8 +205,8 @@ export default function ReviewPage() {
 
                 return (
                   <tr key={item.id}>
-                    <td style={{ color: "var(--text3)" }}>#{item.id}</td>
-                    <td style={{ maxWidth: 260 }}>
+                    <td style={{ color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{item.id}</td>
+                    <td style={{ maxWidth: 280 }}>
                       <div style={{ fontWeight: 500 }}>{item.title}</div>
                     </td>
                     <td>
@@ -222,7 +219,11 @@ export default function ReviewPage() {
                         {item.status}
                       </span>
                     </td>
-                    <td style={{ color: item.status === "pending" && days > 7 ? "var(--orange)" : "var(--text2)" }}>
+                    <td style={{
+                      color: item.status === "pending" && days > 7 ? "var(--orange)" : "var(--text2)",
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 12,
+                    }}>
                       {days === 0 ? "today" : `${days}d`}
                     </td>
                     <td style={{ color: "var(--text3)", fontSize: 11 }}>{fmtDate(item.added_at)}</td>

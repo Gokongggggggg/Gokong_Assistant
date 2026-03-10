@@ -11,13 +11,13 @@ function fmtDate(d) {
 function StreakBar({ current, longest }) {
   const pct = longest > 0 ? Math.round((current / longest) * 100) : 0;
   return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text3)", marginBottom: 5 }}>
+    <div className="streak-bar-container">
+      <div className="streak-bar-label">
         <span>CURRENT vs LONGEST</span>
         <span>{pct}%</span>
       </div>
-      <div style={{ height: 4, background: "var(--bg3)", borderRadius: 2, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: "var(--green)", borderRadius: 2, transition: "width .6s ease" }} />
+      <div className="streak-bar-track">
+        <div className="streak-bar-fill" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -41,7 +41,11 @@ export default function Dashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="text3" style={{ paddingTop: 40 }}>loading...</div>;
+  if (loading) return (
+    <div className="text3" style={{ paddingTop: 60, textAlign: 'center', fontSize: 12, letterSpacing: '.04em' }}>
+      loading...
+    </div>
+  );
 
   const stats   = reviews.stats || {};
   const pending = reviews.items?.filter(i => i.status === "pending") || [];
@@ -50,7 +54,15 @@ export default function Dashboard() {
     <div>
       <div className="page-header">
         <h1 className="page-title">Dashboard</h1>
-        <span style={{ fontSize: 11, color: "var(--text3)" }}>
+        <span style={{
+          fontSize: 11,
+          color: "var(--text3)",
+          background: 'var(--bg2)',
+          padding: '6px 14px',
+          borderRadius: 'var(--radius-xs)',
+          border: '1px solid var(--border)',
+          letterSpacing: '.04em',
+        }}>
           {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Jakarta" }).toUpperCase()}
         </span>
       </div>
@@ -61,7 +73,7 @@ export default function Dashboard() {
           <div className="stat-label">CURRENT STREAK</div>
           <div className={`stat-value ${streak?.current > 0 ? "green" : ""}`}>
             {streak?.current ?? 0}
-            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6 }}>days</span>
+            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>days</span>
           </div>
           {streak && <StreakBar current={streak.current} longest={streak.longest} />}
         </div>
@@ -69,10 +81,10 @@ export default function Dashboard() {
         <div className="stat-card">
           <div className="stat-label">LONGEST STREAK</div>
           <div className="stat-value">{streak?.longest ?? 0}
-            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6 }}>days</span>
+            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>days</span>
           </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: "var(--text3)" }}>
-            {streak?.total ?? 0} total standups
+          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
+            <span style={{ color: 'var(--text2)' }}>{streak?.total ?? 0}</span> total standups
           </div>
         </div>
 
@@ -81,8 +93,8 @@ export default function Dashboard() {
           <div className={`stat-value ${Number(stats.pending) > 0 ? "orange" : "green"}`}>
             {stats.pending ?? 0}
           </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: "var(--text3)" }}>
-            {stats.done ?? 0} solved total
+          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
+            <span style={{ color: 'var(--text2)' }}>{stats.done ?? 0}</span> solved total
           </div>
         </div>
 
@@ -90,10 +102,10 @@ export default function Dashboard() {
           <div className="stat-label">SOLVE RATE</div>
           <div className="stat-value">
             {stats.total > 0 ? Math.round(Number(stats.done) / Number(stats.total) * 100) : 0}
-            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 2 }}>%</span>
+            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 2, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>%</span>
           </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: "var(--text3)" }}>
-            {stats.total ?? 0} total items
+          <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
+            <span style={{ color: 'var(--text2)' }}>{stats.total ?? 0}</span> total items
           </div>
         </div>
       </div>
@@ -103,19 +115,19 @@ export default function Dashboard() {
 
         {/* Recent standups */}
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, letterSpacing: ".1em", color: "var(--text3)" }}>RECENT STANDUPS</div>
-            <a href="/standup" style={{ fontSize: 11, color: "var(--green)" }}>view all →</a>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <span className="section-label">RECENT STANDUPS</span>
+            <a href="/standup" className="section-link">view all →</a>
           </div>
           {entries.length === 0 ? (
-            <div className="text3" style={{ fontSize: 12 }}>Belum ada standup.</div>
+            <div className="text3" style={{ fontSize: 12, padding: '20px 0' }}>Belum ada standup.</div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {entries.map(e => (
-                <div key={e.id} style={{ borderLeft: "2px solid var(--border2)", paddingLeft: 12 }}>
-                  <div style={{ fontSize: 10, color: "var(--text3)", marginBottom: 3 }}>{fmtDate(e.created_at)} · #{e.id}</div>
-                  {e.done && <div className="td-clamp" style={{ maxWidth: "100%", marginBottom: 2 }}>✅ {e.done}</div>}
-                  {e.todo && <div className="td-clamp" style={{ maxWidth: "100%", color: "var(--text3)" }}>🎯 {e.todo}</div>}
+                <div key={e.id} className="timeline-item">
+                  <div className="timeline-meta">{fmtDate(e.created_at)} · #{e.id}</div>
+                  {e.done && <div className="td-clamp" style={{ maxWidth: "100%", marginBottom: 2, fontSize: 12 }}>✅ {e.done}</div>}
+                  {e.todo && <div className="td-clamp" style={{ maxWidth: "100%", color: "var(--text3)", fontSize: 12 }}>🎯 {e.todo}</div>}
                 </div>
               ))}
             </div>
@@ -124,30 +136,42 @@ export default function Dashboard() {
 
         {/* Pending review items */}
         <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, letterSpacing: ".1em", color: "var(--text3)" }}>PENDING REVIEW</div>
-            <a href="/review" style={{ fontSize: 11, color: "var(--orange)" }}>view all →</a>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <span className="section-label">PENDING REVIEW</span>
+            <a href="/review" className="section-link orange">view all →</a>
           </div>
           {pending.length === 0 ? (
-            <div className="text3" style={{ fontSize: 12 }}>List kosong 👍</div>
+            <div className="text3" style={{ fontSize: 12, padding: '20px 0' }}>List kosong 👍</div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {pending.slice(0, 6).map(item => {
                 const days = Math.floor((Date.now() - new Date(item.added_at)) / 86400000);
                 return (
-                  <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={item.id} style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-xs)',
+                    background: 'rgba(255,255,255,.02)',
+                    transition: 'background .15s',
+                  }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="td-clamp" style={{ maxWidth: "100%" }}>{item.title}</div>
-                      {item.category && <span className="tag tag-blue" style={{ marginTop: 3 }}>{item.category}</span>}
+                      <div className="td-clamp" style={{ maxWidth: "100%", fontSize: 12 }}>{item.title}</div>
+                      {item.category && <span className="tag tag-blue" style={{ marginTop: 4, display: 'inline-block' }}>{item.category}</span>}
                     </div>
-                    <span style={{ fontSize: 11, color: days > 7 ? "var(--orange)" : "var(--text3)", marginLeft: 12, whiteSpace: "nowrap" }}>
+                    <span style={{
+                      fontSize: 11,
+                      color: days > 7 ? "var(--orange)" : "var(--text3)",
+                      marginLeft: 12,
+                      whiteSpace: "nowrap",
+                      fontFamily: 'var(--font-mono)',
+                    }}>
                       {days === 0 ? "today" : `${days}d`}
                     </span>
                   </div>
                 );
               })}
               {pending.length > 6 && (
-                <div style={{ fontSize: 11, color: "var(--text3)" }}>+{pending.length - 6} more</div>
+                <div style={{ fontSize: 11, color: "var(--text3)", paddingLeft: 12 }}>+{pending.length - 6} more</div>
               )}
             </div>
           )}
