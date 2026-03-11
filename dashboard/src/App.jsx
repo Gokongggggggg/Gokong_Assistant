@@ -31,7 +31,7 @@ function Login({ onLogin }) {
     <div className="login-container">
       <div className="login-box">
         <div className="login-brand">
-          standup<span>.log</span>
+          ⚡ Menyala<span>Gokong</span>
         </div>
         <div className="login-sub">DASHBOARD ACCESS</div>
         <form onSubmit={submit}>
@@ -86,7 +86,7 @@ function Sidebar({ onLogout }) {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">standup<span>.log</span></div>
+      <div className="sidebar-logo">⚡ Menyala<span>Gokong</span></div>
       <nav className="nav">
         {navItems.map(({ to, icon, label }) => (
           <NavLink key={to} to={to} end={to === "/"}>
