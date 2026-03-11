@@ -366,7 +366,7 @@ export default function ChallengesPage() {
       </div>
 
       {/* Stats bar */}
-      <div style={{ display: "flex", gap: 14, marginBottom: 22 }}>
+      <div style={{ display: "flex", gap: 14, marginBottom: 22, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
         {[
           { label: "Solved",  value: stats.solved  ?? 0, color: "var(--green)" },
           { label: "Upsolve", value: stats.upsolve ?? 0, color: "var(--blue)" },

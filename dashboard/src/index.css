@@ -743,10 +743,191 @@ textarea { resize: vertical; }
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .table-wrap {
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 768px) {
-  .sidebar { display: none; }
-  .main { margin-left: 0; padding: 20px 16px; max-width: 100vw; }
-  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    top: auto;
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    padding: 0;
+    z-index: 100;
+  }
+
+  .sidebar::before { display: none; }
+
+  .sidebar-logo { display: none; }
+
+  .nav {
+    flex-direction: row;
+    padding: 0;
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  .nav-item {
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 6px;
+    font-size: 9px;
+    letter-spacing: .02em;
+    border-radius: 0;
+    text-align: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .nav-item .icon {
+    font-size: 18px;
+    width: auto;
+  }
+
+  .nav-item.active::before {
+    left: 50%;
+    top: 0;
+    bottom: auto;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+  }
+
+  /* Hide logout button on mobile bottom nav */
+  .nav > button:last-child {
+    display: none;
+  }
+
+  /* Hide divider before logout */
+  .nav > div[style*="padding: '0 12px'"],
+  .nav > div:has(> div[style*="height: 1"]) {
+    display: none;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 20px 16px 80px;
+    max-width: 100vw;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  /* Table scroll on mobile */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrap table {
+    min-width: 600px;
+  }
+
+  /* Cards two-column → single column */
+  .card {
+    padding: 16px;
+  }
+
+  /* Modal full width on mobile */
+  .modal {
+    width: 95vw;
+    max-width: 95vw;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 12px;
+  }
+
+  /* Stats bar scroll horizontal */
+  .card-sm {
+    min-width: 80px;
+    padding: 10px 12px;
+  }
+
+  /* Filter tabs scroll */
+  .filter-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .filter-tab {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  /* Login responsive */
+  .login-box {
+    width: 90vw;
+    max-width: 380px;
+    padding: 0 16px;
+  }
+
+  .login-brand {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .btn {
+    padding: 7px 14px;
+    font-size: 11px;
+  }
+
+  .btn-sm {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 }
