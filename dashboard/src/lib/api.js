@@ -19,7 +19,19 @@ export const api = {
   getStreak:     ()                        => req("GET", "/api/standup/streak"),
   updateStandup: (id, data)                => req("PUT", `/api/standup/${id}`, data),
   deleteStandup: (id)                      => req("DELETE", `/api/standup/${id}`),
-  exportXlsx:    ()                        => { window.open(`/api/standup/export.xlsx`, "_blank"); },
+  exportXlsx: async () => {
+    const res = await fetch("/api/standup/export.xlsx", {
+      headers: { "x-dashboard-key": key() },
+    });
+    if (!res.ok) throw new Error("Export failed");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `standup-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
 
   // ── Review (legacy, still used on dashboard) ────────────────────────────
   getReviews:    ()       => req("GET", "/api/review/all"),

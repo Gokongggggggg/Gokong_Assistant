@@ -271,71 +271,125 @@ export default function CompetitionsPage() {
           Belum ada competition. Tambah pake <code>/comp add</code> di Discord atau klik button di atas.
         </div>
       ) : (
-        <div className="table-wrap">
-          <table style={{ tableLayout: 'fixed', width: '100%' }}>
-  <colgroup>
-    <col style={{ width: 50 }} />
-    <col style={{ width: '25%' }} />
-    <col style={{ width: 110 }} />
-    <col style={{ width: '15%' }} />
-    <col style={{ width: 90 }} />
-    <col style={{ width: 80 }} />
-    <col style={{ width: 85 }} />
-    <col style={{ width: 90 }} />
-  </colgroup>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>NAME</th>
-      <th>TEAM</th>
-      <th>MEMBERS</th>
-      <th>CHALLS</th>
-      <th>STATUS</th>
-      <th>DATE</th>
-      <th>ACTIONS</th>
-    </tr>
-  </thead>
-            <tbody>
-              {items.map(item => (
-                <tr key={item.id}>
-                  <td style={{ color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{item.id}</td>
-                  <td>
+        <>
+          {/* Desktop table */}
+          <div className="table-wrap desktop-only">
+            <table style={{ tableLayout: 'fixed', width: '100%' }}>
+              <colgroup>
+                <col style={{ width: 50 }} />
+                <col style={{ width: '25%' }} />
+                <col style={{ width: 110 }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: 90 }} />
+                <col style={{ width: 80 }} />
+                <col style={{ width: 85 }} />
+                <col style={{ width: 90 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>NAME</th>
+                  <th>TEAM</th>
+                  <th>MEMBERS</th>
+                  <th>CHALLS</th>
+                  <th>STATUS</th>
+                  <th>DATE</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(item => (
+                  <tr key={item.id}>
+                    <td style={{ color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{item.id}</td>
+                    <td>
+                      <button
+                        onClick={() => setViewing(item.id)}
+                        style={{
+                          background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer',
+                          fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: 13, padding: 0, textAlign: 'left',
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                      {item.url && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--blue)' }}>🔗</span>}
+                    </td>
+                    <td style={{ color: 'var(--text2)', fontSize: 12 }}>{item.team_name || <span className="text3">—</span>}</td>
+                    <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)', fontSize: 12 }}>
+                      {item.members || <span className="text3">—</span>}
+                    </td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                      <span style={{ color: 'var(--green)' }}>{item.solved_count}</span>
+                      <span className="text3"> / {item.challenge_count}</span>
+                    </td>
+                    <td>
+                      <span className={`tag ${item.status === 'done' ? 'tag-green' : item.status === 'ongoing' ? 'tag-orange' : 'tag-gray'}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td style={{ color: "var(--text3)", fontSize: 11 }}>{fmtDate(item.created_at)}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setEditing(item)} style={{ fontSize: 11 }}>Edit</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)} style={{ fontSize: 11 }}>Del</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {items.map(item => (
+              <div key={item.id} className="card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                  <div>
                     <button
                       onClick={() => setViewing(item.id)}
                       style={{
                         background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer',
-                        fontWeight: 500, fontFamily: 'var(--font-mono)', fontSize: 13, padding: 0, textAlign: 'left',
+                        fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: 14, padding: 0, textAlign: 'left',
                       }}
                     >
                       {item.name}
                     </button>
-                    {item.url && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--blue)' }}>🔗</span>}
-                  </td>
-                  <td style={{ color: 'var(--text2)', fontSize: 12 }}>{item.team_name || <span className="text3">—</span>}</td>
-                  <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)', fontSize: 12 }}>
-                    {item.members || <span className="text3">—</span>}
-                  </td>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                    <span style={{ color: 'var(--green)' }}>{item.solved_count}</span>
-                    <span className="text3"> / {item.challenge_count}</span>
-                  </td>
-                  <td>
-                    <span className={`tag ${item.status === 'done' ? 'tag-green' : item.status === 'ongoing' ? 'tag-orange' : 'tag-gray'}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td style={{ color: "var(--text3)", fontSize: 11 }}>{fmtDate(item.created_at)}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(item)} style={{ fontSize: 11 }}>Edit</button>
-  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)} style={{ fontSize: 11 }}>Del</button>
-</div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>#{item.id} · {fmtDate(item.created_at)}</div>
+                  </div>
+                  <span className={`tag ${item.status === 'done' ? 'tag-green' : item.status === 'ongoing' ? 'tag-orange' : 'tag-gray'}`}>
+                    {item.status}
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12, marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.1em', marginBottom: 2 }}>TEAM</div>
+                    <div style={{ color: 'var(--text2)' }}>{item.team_name || "—"}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.1em', marginBottom: 2 }}>CHALLENGES</div>
+                    <div>
+                      <span style={{ color: 'var(--green)' }}>{item.solved_count}</span>
+                      <span className="text3"> / {item.challenge_count}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {item.members && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.1em', marginBottom: 2 }}>MEMBERS</div>
+                    <div style={{ color: 'var(--text2)', fontSize: 12 }}>{item.members}</div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(item)} style={{ fontSize: 11 }}>Edit</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)} style={{ fontSize: 11 }}>Del</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {adding  && <AddModal onAdd={handleAdd} onClose={() => setAdding(false)} />}
