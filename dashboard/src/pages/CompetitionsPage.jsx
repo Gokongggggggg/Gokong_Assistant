@@ -9,6 +9,18 @@ function fmtDate(d) {
   });
 }
 
+function MemberTags({ members }) {
+  if (!members) return <span className="text3">—</span>;
+  const list = members.split(",").map(m => m.trim()).filter(Boolean);
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      {list.map((m, i) => (
+        <span key={i} className="tag tag-gray" style={{ fontSize: 10 }}>{m}</span>
+      ))}
+    </div>
+  );
+}
+
 function AddModal({ onAdd, onClose }) {
   const [form, setForm] = useState({ name: "", team_name: "", members: "", url: "", notes: "" });
   const [saving, setSaving] = useState(false);
@@ -170,7 +182,7 @@ function DetailModal({ compId, onClose }) {
         <div className="modal-title">🏆 {data.name}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
           {data.team_name && <div><span className="text3" style={{ fontSize: 10 }}>TEAM</span><div style={{ fontSize: 13 }}>{data.team_name}</div></div>}
-          {data.members && <div><span className="text3" style={{ fontSize: 10 }}>MEMBERS</span><div style={{ fontSize: 13 }}>{data.members}</div></div>}
+          {data.members && <div><span className="text3" style={{ fontSize: 10 }}>MEMBERS</span><div style={{ marginTop: 4 }}><MemberTags members={data.members} /></div></div>}
           {data.ranking && <div><span className="text3" style={{ fontSize: 10 }}>RANKING</span><div style={{ fontSize: 13 }}>{data.ranking}</div></div>}
           {data.status && <div><span className="text3" style={{ fontSize: 10 }}>STATUS</span><div style={{ fontSize: 13 }}>{data.status}</div></div>}
         </div>
@@ -314,9 +326,9 @@ export default function CompetitionsPage() {
                       {item.url && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--blue)' }}>🔗</span>}
                     </td>
                     <td style={{ color: 'var(--text2)', fontSize: 12 }}>{item.team_name || <span className="text3">—</span>}</td>
-                    <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)', fontSize: 12 }}>
-                      {item.members || <span className="text3">—</span>}
-                    </td>
+                    <td style={{ color: 'var(--text2)', fontSize: 12 }}>
+                    <MemberTags members={item.members} />
+                  </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
                       <span style={{ color: 'var(--green)' }}>{item.solved_count}</span>
                       <span className="text3"> / {item.challenge_count}</span>
@@ -377,8 +389,8 @@ export default function CompetitionsPage() {
 
                 {item.members && (
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.1em', marginBottom: 2 }}>MEMBERS</div>
-                    <div style={{ color: 'var(--text2)', fontSize: 12 }}>{item.members}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.1em', marginBottom: 4 }}>MEMBERS</div>
+                    <MemberTags members={item.members} />
                   </div>
                 )}
 
