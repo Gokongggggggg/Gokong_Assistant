@@ -838,15 +838,17 @@ textarea { resize: vertical; }
     background: rgba(250,204,21,.06);
   }
 
-  /* Hide logout button on mobile bottom nav */
-  .nav > button:last-child {
+ /* Hide logout, spacer, and divider on mobile */
+  .nav > button {
     display: none;
   }
 
-  /* Hide divider before logout */
-  .nav > div[style*="padding: '0 12px'"],
-  .nav > div:has(> div[style*="height: 1"]) {
+  .nav > div {
     display: none;
+  }
+
+  .nav > a {
+    display: flex;
   }
 
   .main {
