@@ -18,13 +18,13 @@ function EntryRow({ entry, onEdit, onDelete }) {
       <tr style={{ cursor: "pointer" }} onClick={() => setExpanded(x => !x)}>
         <td style={{ width: 36, color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{entry.id}</td>
         <td style={{ width: 175, color: "var(--text2)", whiteSpace: "nowrap", fontSize: 12 }}>{fmtDate(entry.created_at)}</td>
-        <td className="td-clamp">{entry.done || <span className="text3">—</span>}</td>
-        <td className="td-clamp">{entry.todo || <span className="text3">—</span>}</td>
+        <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)' }}>{entry.done || <span className="text3">—</span>}</td>
+<td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)' }}>{entry.todo || <span className="text3">—</span>}</td>
         <td style={{ width: 80 }}>
-          <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
-            <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onEdit(entry)}>✎</button>
-            <button className="btn btn-danger btn-sm btn-icon" onClick={() => onDelete(entry.id)}>✕</button>
-          </div>
+          <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+  <button className="btn btn-ghost btn-sm" onClick={() => onEdit(entry)} style={{ fontSize: 11 }}>Edit</button>
+  <button className="btn btn-danger btn-sm" onClick={() => onDelete(entry.id)} style={{ fontSize: 11 }}>Del</button>
+</div>
         </td>
       </tr>
       {expanded && (
@@ -150,16 +150,23 @@ export default function StandupPage() {
       ) : (
         <>
           <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>DATE</th>
-                  <th>DONE</th>
-                  <th>TODO</th>
-                  <th></th>
-                </tr>
-              </thead>
+           <table style={{ tableLayout: 'fixed', width: '100%' }}>
+  <colgroup>
+    <col style={{ width: 50 }} />
+    <col style={{ width: 175 }} />
+    <col style={{ width: '35%' }} />
+    <col style={{ width: '35%' }} />
+    <col style={{ width: 90 }} />
+  </colgroup>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>DATE</th>
+      <th>DONE</th>
+      <th>TODO</th>
+      <th>ACTIONS</th>
+    </tr>
+  </thead>
               <tbody>
                 {entries.map(e => (
                   <EntryRow key={e.id} entry={e} onEdit={setEditing} onDelete={handleDelete} />

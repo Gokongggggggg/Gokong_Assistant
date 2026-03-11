@@ -272,19 +272,29 @@ export default function CompetitionsPage() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: 36 }}>ID</th>
-                <th>NAME</th>
-                <th style={{ width: 120 }}>TEAM</th>
-                <th style={{ width: 120 }}>MEMBERS</th>
-                <th style={{ width: 100 }}>CHALLENGES</th>
-                <th style={{ width: 80 }}>STATUS</th>
-                <th style={{ width: 90 }}>DATE</th>
-                <th style={{ width: 100 }}></th>
-              </tr>
-            </thead>
+          <table style={{ tableLayout: 'fixed', width: '100%' }}>
+  <colgroup>
+    <col style={{ width: 50 }} />
+    <col style={{ width: '25%' }} />
+    <col style={{ width: 110 }} />
+    <col style={{ width: '15%' }} />
+    <col style={{ width: 90 }} />
+    <col style={{ width: 80 }} />
+    <col style={{ width: 85 }} />
+    <col style={{ width: 90 }} />
+  </colgroup>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>NAME</th>
+      <th>TEAM</th>
+      <th>MEMBERS</th>
+      <th>CHALLS</th>
+      <th>STATUS</th>
+      <th>DATE</th>
+      <th>ACTIONS</th>
+    </tr>
+  </thead>
             <tbody>
               {items.map(item => (
                 <tr key={item.id}>
@@ -302,7 +312,7 @@ export default function CompetitionsPage() {
                     {item.url && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--blue)' }}>🔗</span>}
                   </td>
                   <td style={{ color: 'var(--text2)', fontSize: 12 }}>{item.team_name || <span className="text3">—</span>}</td>
-                  <td className="td-clamp" style={{ maxWidth: 120, color: 'var(--text2)', fontSize: 12 }}>
+                  <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text2)', fontSize: 12 }}>
                     {item.members || <span className="text3">—</span>}
                   </td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
@@ -316,10 +326,10 @@ export default function CompetitionsPage() {
                   </td>
                   <td style={{ color: "var(--text3)", fontSize: 11 }}>{fmtDate(item.created_at)}</td>
                   <td>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setEditing(item)}>✎</button>
-                      <button className="btn btn-danger btn-sm btn-icon" onClick={() => handleDelete(item.id)}>✕</button>
-                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(item)} style={{ fontSize: 11 }}>Edit</button>
+  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)} style={{ fontSize: 11 }}>Del</button>
+</div>
                   </td>
                 </tr>
               ))}
