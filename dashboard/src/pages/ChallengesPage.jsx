@@ -4,8 +4,11 @@ import { api } from "../lib/api.js";
 
 const PAGE_SIZE = 30;
 
-const STATUS_ICONS = {
-  solved: "✅", upsolve: "🔄", need_review: "📋", stuck: "🔴",
+const STATUS_CONFIG = {
+  solved:      { icon: "✅", label: "solved",  tagClass: "tag-green"  },
+  upsolve:     { icon: "🔄", label: "upsolve", tagClass: "tag-blue"   },
+  need_review: { icon: "📋", label: "review",  tagClass: "tag-orange" },
+  stuck:       { icon: "🔴", label: "stuck",   tagClass: "tag-gray"   },
 };
 
 function fmtDate(d) {
@@ -20,6 +23,54 @@ function daysSince(d) {
   return Math.floor((Date.now() - new Date(d)) / 86400000);
 }
 
+/* ── Status dropdown (replaces tiny icon buttons) ─────────────────────────── */
+function StatusDropdown({ current, onChange }) {
+  const [open, setOpen] = useState(false);
+  const cfg = STATUS_CONFIG[current] || STATUS_CONFIG.stuck;
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={`tag ${cfg.tagClass}`}
+        style={{ cursor: 'pointer', border: '1px solid transparent', fontSize: 11, padding: '4px 10px' }}
+      >
+        {cfg.icon} {cfg.label} ▾
+      </button>
+      {open && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 50 }} onClick={() => setOpen(false)} />
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 51,
+            background: 'var(--bg1)', border: '1px solid var(--border2)', borderRadius: 'var(--radius-sm)',
+            padding: 4, minWidth: 140, boxShadow: 'var(--shadow-md)',
+          }}>
+            {Object.entries(STATUS_CONFIG).map(([key, val]) => (
+              <button
+                key={key}
+                onClick={() => { onChange(key); setOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                  padding: '7px 10px', border: 'none', borderRadius: 'var(--radius-xs)',
+                  background: current === key ? 'rgba(255,255,255,.06)' : 'none',
+                  color: current === key ? 'var(--text)' : 'var(--text2)',
+                  fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span>{val.icon}</span>
+                <span>{val.label}</span>
+                {current === key && <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--green)' }}>●</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Add Modal ────────────────────────────────────────────────────────────── */
 function AddModal({ comps, onAdd, onClose }) {
   const [form, setForm] = useState({
     title: "", category: "", custom_category: "", link: "", comp_id: "", difficulty: "", notes: "",
@@ -62,27 +113,23 @@ function AddModal({ comps, onAdd, onClose }) {
               <option value="__custom">custom...</option>
             </select>
           </div>
-          {form.category === "__custom" ? (
-            <div className="form-group">
-              <label className="input-label">CUSTOM CATEGORY</label>
+          <div className="form-group">
+            <label className="input-label">{form.category === "__custom" ? "CUSTOM CATEGORY" : "DIFFICULTY"}</label>
+            {form.category === "__custom" ? (
               <input type="text" value={form.custom_category}
-                onChange={e => set("custom_category", e.target.value)}
-                placeholder="e.g. osint, stego..." />
-            </div>
-          ) : (
-            <div className="form-group">
-              <label className="input-label">DIFFICULTY</label>
+                onChange={e => set("custom_category", e.target.value)} placeholder="e.g. osint, stego..." />
+            ) : (
               <input type="text" value={form.difficulty} onChange={e => set("difficulty", e.target.value)}
                 placeholder="easy / medium / hard" />
-            </div>
-          )}
-        </div>
-        <div className="form-group">
-          <label className="input-label">LINK</label>
-          <input type="text" value={form.link} onChange={e => set("link", e.target.value)}
-            placeholder="https://..." />
+            )}
+          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-group">
+            <label className="input-label">LINK</label>
+            <input type="text" value={form.link} onChange={e => set("link", e.target.value)}
+              placeholder="https://..." />
+          </div>
           <div className="form-group">
             <label className="input-label">COMPETITION</label>
             <select value={form.comp_id} onChange={e => set("comp_id", e.target.value)}>
@@ -90,14 +137,14 @@ function AddModal({ comps, onAdd, onClose }) {
               {comps.map(c => <option key={c.id} value={c.id}>#{c.id} {c.name}</option>)}
             </select>
           </div>
-          {form.category === "__custom" && (
-            <div className="form-group">
-              <label className="input-label">DIFFICULTY</label>
-              <input type="text" value={form.difficulty} onChange={e => set("difficulty", e.target.value)}
-                placeholder="easy / medium / hard" />
-            </div>
-          )}
         </div>
+        {form.category === "__custom" && (
+          <div className="form-group">
+            <label className="input-label">DIFFICULTY</label>
+            <input type="text" value={form.difficulty} onChange={e => set("difficulty", e.target.value)}
+              placeholder="easy / medium / hard" />
+          </div>
+        )}
         <div className="form-group">
           <label className="input-label">NOTES</label>
           <textarea rows={2} value={form.notes} onChange={e => set("notes", e.target.value)}
@@ -114,6 +161,7 @@ function AddModal({ comps, onAdd, onClose }) {
   );
 }
 
+/* ── Edit Modal ───────────────────────────────────────────────────────────── */
 function EditModal({ item, comps, onSave, onClose }) {
   const CATS = ["pwn", "web", "rev", "crypto", "forensic", "misc"];
   const isCustom = item.category && !CATS.includes(item.category);
@@ -182,10 +230,9 @@ function EditModal({ item, comps, onSave, onClose }) {
           <div className="form-group">
             <label className="input-label">STATUS</label>
             <select value={form.status} onChange={e => set("status", e.target.value)}>
-              <option value="stuck">stuck</option>
-              <option value="solved">solved</option>
-              <option value="upsolve">upsolve</option>
-              <option value="need_review">need_review</option>
+              {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                <option key={k} value={k}>{v.icon} {v.label}</option>
+              ))}
             </select>
           </div>
           <div className="form-group">
@@ -229,6 +276,7 @@ function EditModal({ item, comps, onSave, onClose }) {
   );
 }
 
+/* ── Main Page ────────────────────────────────────────────────────────────── */
 export default function ChallengesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [items,    setItems]    = useState([]);
@@ -240,7 +288,7 @@ export default function ChallengesPage() {
   const [editing,  setEditing]  = useState(null);
   const [loading,  setLoading]  = useState(true);
 
-  const filter   = searchParams.get("status") || "all";
+  const filter    = searchParams.get("status") || "all";
   const catFilter = searchParams.get("category") || "";
 
   async function load(off = 0, status, category) {
@@ -281,8 +329,7 @@ export default function ChallengesPage() {
   }
 
   async function handleAdd(data) {
-    const item = await api.createChallenge(data);
-    // Reload to get fresh stats
+    await api.createChallenge(data);
     await load(0, filter, catFilter);
     setAdding(false);
   }
@@ -290,7 +337,6 @@ export default function ChallengesPage() {
   async function handleEdit(id, data) {
     const updated = await api.updateChallenge(id, data);
     setItems(is => is.map(i => i.id === id ? updated : i));
-    // Refresh stats
     api.getChallengeStats().then(setStats);
     setEditing(null);
   }
@@ -337,7 +383,7 @@ export default function ChallengesPage() {
         ))}
       </div>
 
-      {/* Filter tabs */}
+      {/* Filter row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 18 }}>
         <div className="filter-tabs" style={{ marginBottom: 0 }}>
           {["all", "solved", "upsolve", "need_review", "stuck"].map(f => (
@@ -356,7 +402,7 @@ export default function ChallengesPage() {
           style={{
             background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xs)',
             color: 'var(--text2)', fontFamily: 'var(--font-mono)', fontSize: 11, padding: '6px 10px',
-            cursor: 'pointer', marginBottom: 0,
+            cursor: 'pointer',
           }}
         >
           <option value="">all categories</option>
@@ -375,17 +421,27 @@ export default function ChallengesPage() {
       ) : (
         <>
           <div className="table-wrap">
-            <table>
+            <table style={{ tableLayout: 'fixed', width: '100%' }}>
+              <colgroup>
+                <col style={{ width: 50 }} />
+                <col style={{ width: '30%' }} />
+                <col style={{ width: 90 }} />
+                <col style={{ width: '15%' }} />
+                <col style={{ width: 120 }} />
+                <col style={{ width: 60 }} />
+                <col style={{ width: 70 }} />
+                <col style={{ width: 90 }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ width: 36 }}>ID</th>
+                  <th>ID</th>
                   <th>TITLE</th>
-                  <th style={{ width: 90 }}>CATEGORY</th>
-                  <th style={{ width: 100 }}>COMPETITION</th>
-                  <th style={{ width: 80 }}>STATUS</th>
-                  <th style={{ width: 70 }}>DAYS</th>
-                  <th style={{ width: 70 }}>DIFF</th>
-                  <th style={{ width: 130 }}></th>
+                  <th>CAT</th>
+                  <th>COMP</th>
+                  <th>STATUS</th>
+                  <th>DAYS</th>
+                  <th>DIFF</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -396,12 +452,14 @@ export default function ChallengesPage() {
 
                   return (
                     <tr key={item.id}>
-                      <td style={{ color: "var(--text3)", fontFamily: 'var(--font-mono)' }}>#{item.id}</td>
-                      <td style={{ maxWidth: 260 }}>
-                        <div style={{ fontWeight: 500 }}>{item.title}</div>
+                      <td style={{ color: "var(--text3)", fontFamily: 'var(--font-mono)', fontSize: 12 }}>#{item.id}</td>
+                      <td>
+                        <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.title}
+                        </div>
                         {item.link && (
                           <a href={item.link} target="_blank" rel="noopener"
-                            style={{ fontSize: 11, color: 'var(--blue)', display: 'inline-block', marginTop: 2 }}
+                            style={{ fontSize: 11, color: 'var(--blue)' }}
                             onClick={e => e.stopPropagation()}>
                             🔗 link
                           </a>
@@ -412,43 +470,42 @@ export default function ChallengesPage() {
                           ? <span className="tag tag-blue">{item.category}</span>
                           : <span className="text3">—</span>}
                       </td>
-                      <td style={{ fontSize: 11, color: 'var(--text2)' }}>
-                        {item.comp_name || <span className="text3">—</span>}
+                      <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 12, color: 'var(--text2)' }}>
+                          {item.comp_name || <span className="text3">—</span>}
+                        </span>
                       </td>
                       <td>
-                        <span className={`tag ${
-                          item.status === 'solved' ? 'tag-green' :
-                          item.status === 'upsolve' ? 'tag-blue' :
-                          item.status === 'need_review' ? 'tag-orange' : 'tag-gray'
-                        }`}>
-                          {STATUS_ICONS[item.status]} {item.status === "need_review" ? "review" : item.status}
-                        </span>
+                        <StatusDropdown
+                          current={item.status}
+                          onChange={(s) => handleStatusChange(item.id, s)}
+                        />
                       </td>
                       <td style={{
                         color: item.status === 'stuck' && days > 7 ? 'var(--orange)' : 'var(--text2)',
                         fontFamily: 'var(--font-mono)', fontSize: 12,
                       }}>
-                        {days === 0 ? "today" : `${days}d`}
+                        {days === 0 ? "today" : days < 0 ? "—" : `${days}d`}
                       </td>
                       <td style={{ fontSize: 11, color: 'var(--text3)' }}>
                         {item.difficulty || "—"}
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: 4, flexWrap: 'wrap' }}>
-                          {item.status !== "solved" && (
-                            <button className="btn btn-ghost btn-sm" style={{ color: "var(--green)" }}
-                              onClick={() => handleStatusChange(item.id, "solved")}>✓</button>
-                          )}
-                          {item.status === "stuck" && (
-                            <button className="btn btn-ghost btn-sm" style={{ color: "var(--orange)", fontSize: 10 }}
-                              onClick={() => handleStatusChange(item.id, "need_review")}>📋</button>
-                          )}
-                          {item.status === "solved" && (
-                            <button className="btn btn-ghost btn-sm" style={{ fontSize: 10 }}
-                              onClick={() => handleStatusChange(item.id, "stuck")}>↺</button>
-                          )}
-                          <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setEditing(item)}>✎</button>
-                          <button className="btn btn-danger btn-sm btn-icon" onClick={() => handleDelete(item.id)}>✕</button>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => setEditing(item)}
+                            style={{ fontSize: 11 }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDelete(item.id)}
+                            style={{ fontSize: 11 }}
+                          >
+                            Del
+                          </button>
                         </div>
                       </td>
                     </tr>
