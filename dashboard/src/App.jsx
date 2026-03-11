@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, NavLink, useNavigate, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
 import StandupPage from "./pages/StandupPage.jsx";
-import ReviewPage from "./pages/ReviewPage.jsx";
+import CompetitionsPage from "./pages/CompetitionsPage.jsx";
+import ChallengesPage from "./pages/ChallengesPage.jsx";
 
 function Login({ onLogin }) {
   const [pw, setPw] = useState("");
@@ -77,9 +78,10 @@ function Login({ onLogin }) {
 
 function Sidebar({ onLogout }) {
   const navItems = [
-    { to: "/",        icon: "◫", label: "DASHBOARD" },
-    { to: "/standup", icon: "☰", label: "STANDUP" },
-    { to: "/review",  icon: "⟳", label: "REVIEW" },
+    { to: "/",             icon: "◫", label: "DASHBOARD" },
+    { to: "/standup",      icon: "☰", label: "STANDUP" },
+    { to: "/competitions", icon: "🏆", label: "COMPETITIONS" },
+    { to: "/challenges",   icon: "⚡", label: "CHALLENGES" },
   ];
 
   return (
@@ -123,9 +125,11 @@ export default function App() {
       <Sidebar onLogout={logout} />
       <main className="main">
         <Routes>
-          <Route path="/"        element={<Dashboard />} />
-          <Route path="/standup" element={<StandupPage />} />
-          <Route path="/review"  element={<ReviewPage />} />
+          <Route path="/"             element={<Dashboard />} />
+          <Route path="/standup"      element={<StandupPage />} />
+          <Route path="/competitions" element={<CompetitionsPage />} />
+          <Route path="/challenges"   element={<ChallengesPage />} />
+          <Route path="/review"       element={<Navigate to="/challenges?status=need_review" replace />} />
         </Routes>
       </main>
     </div>

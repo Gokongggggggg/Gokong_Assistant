@@ -24,20 +24,26 @@ function StreakBar({ current, longest }) {
 }
 
 export default function Dashboard() {
-  const [streak,  setStreak]  = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [reviews, setReviews] = useState({ items: [], stats: {} });
-  const [loading, setLoading] = useState(true);
+  const [streak,     setStreak]     = useState(null);
+  const [entries,    setEntries]    = useState([]);
+  const [chalStats,  setChalStats]  = useState({});
+  const [needReview, setNeedReview] = useState([]);
+  const [comps,      setComps]      = useState([]);
+  const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
     Promise.all([
       api.getStreak(),
       api.getStandups(5, 0),
-      api.getReviews(),
-    ]).then(([s, e, r]) => {
+      api.getChallengeStats(),
+      api.getChallenges({ status: "need_review", limit: 6 }),
+      api.getCompetitions(),
+    ]).then(([s, e, cs, nr, comps]) => {
       setStreak(s);
       setEntries(e.entries || []);
-      setReviews(r);
+      setChalStats(cs);
+      setNeedReview(nr.items || []);
+      setComps(comps.items || []);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -47,8 +53,9 @@ export default function Dashboard() {
     </div>
   );
 
-  const stats   = reviews.stats || {};
-  const pending = reviews.items?.filter(i => i.status === "pending") || [];
+  const totalSolved = Number(chalStats.solved || 0) + Number(chalStats.upsolve || 0);
+  const totalChal   = Number(chalStats.total || 0);
+  const solveRate   = totalChal > 0 ? Math.round(totalSolved / totalChal * 100) : 0;
 
   return (
     <div>
@@ -79,33 +86,34 @@ export default function Dashboard() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-label">LONGEST STREAK</div>
-          <div className="stat-value">{streak?.longest ?? 0}
-            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>days</span>
+          <div className="stat-label">CHALLENGES SOLVED</div>
+          <div className="stat-value green">
+            {totalSolved}
+            <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 6, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>/ {totalChal}</span>
           </div>
           <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
-            <span style={{ color: 'var(--text2)' }}>{streak?.total ?? 0}</span> total standups
+            <span style={{ color: 'var(--text2)' }}>{chalStats.upsolve || 0}</span> upsolved
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-label">REVIEW PENDING</div>
-          <div className={`stat-value ${Number(stats.pending) > 0 ? "orange" : "green"}`}>
-            {stats.pending ?? 0}
+          <div className="stat-label">NEED REVIEW</div>
+          <div className={`stat-value ${Number(chalStats.need_review) > 0 ? "orange" : "green"}`}>
+            {chalStats.need_review ?? 0}
           </div>
           <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
-            <span style={{ color: 'var(--text2)' }}>{stats.done ?? 0}</span> solved total
+            <span style={{ color: 'var(--text2)' }}>{chalStats.stuck || 0}</span> stuck
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-label">SOLVE RATE</div>
           <div className="stat-value">
-            {stats.total > 0 ? Math.round(Number(stats.done) / Number(stats.total) * 100) : 0}
+            {solveRate}
             <span style={{ fontSize: 14, color: "var(--text3)", marginLeft: 2, fontFamily: 'var(--font-mono)', fontWeight: 400 }}>%</span>
           </div>
           <div style={{ marginTop: 12, fontSize: 11, color: "var(--text3)" }}>
-            <span style={{ color: 'var(--text2)' }}>{stats.total ?? 0}</span> total items
+            <span style={{ color: 'var(--text2)' }}>{comps.length}</span> competitions
           </div>
         </div>
       </div>
@@ -134,29 +142,31 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Pending review items */}
+        {/* Need review challenges */}
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <span className="section-label">PENDING REVIEW</span>
-            <a href="/review" className="section-link orange">view all →</a>
+            <span className="section-label">NEED REVIEW</span>
+            <a href="/challenges?status=need_review" className="section-link orange">view all →</a>
           </div>
-          {pending.length === 0 ? (
-            <div className="text3" style={{ fontSize: 12, padding: '20px 0' }}>List kosong 👍</div>
+          {needReview.length === 0 ? (
+            <div className="text3" style={{ fontSize: 12, padding: '20px 0' }}>Semua beres 👍</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {pending.slice(0, 6).map(item => {
-                const days = Math.floor((Date.now() - new Date(item.added_at)) / 86400000);
+              {needReview.map(item => {
+                const days = Math.floor((Date.now() - new Date(item.created_at)) / 86400000);
                 return (
                   <div key={item.id} style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     padding: '8px 12px',
                     borderRadius: 'var(--radius-xs)',
                     background: 'rgba(255,255,255,.02)',
-                    transition: 'background .15s',
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="td-clamp" style={{ maxWidth: "100%", fontSize: 12 }}>{item.title}</div>
-                      {item.category && <span className="tag tag-blue" style={{ marginTop: 4, display: 'inline-block' }}>{item.category}</span>}
+                      <div className="td-clamp" style={{ maxWidth: "100%", fontSize: 12 }}>📋 {item.title}</div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                        {item.category && <span className="tag tag-blue">{item.category}</span>}
+                        {item.comp_name && <span className="tag tag-gray">{item.comp_name}</span>}
+                      </div>
                     </div>
                     <span style={{
                       fontSize: 11,
@@ -170,9 +180,6 @@ export default function Dashboard() {
                   </div>
                 );
               })}
-              {pending.length > 6 && (
-                <div style={{ fontSize: 11, color: "var(--text3)", paddingLeft: 12 }}>+{pending.length - 6} more</div>
-              )}
             </div>
           )}
         </div>
